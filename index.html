@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Kotlin WebSockets demo</title>
+</head>
+<body>
+    <h1>Kotlin WebSockets demo</h1>
+    <div>
+        <div id="clientid">Client ID: </div>
+        <div>-----------------------------</div>
+        <div>Sending random numbers... <span id="rand"></span></div>
+        <div>-----------------------------</div>
+        <div>
+            <h2>Primes:</h2>
+            <div id="primes">
+            </div>
+        </div>
+    </div>
+    <script>
+        var clientId = parseInt(Math.random()*100000);
+        document.querySelector('#clientid').innerHTML += clientId;
+        var ws = new WebSocket("ws://localhost:8080/ws/primes");
+        ws.onopen = function() { console.log('connection established') };
+        ws.onclose = function() { console.log('connection closed') };
+        ws.onerror = function(err) { console.log('error: ', err)};
+        ws.onmessage = function(message) {
+            var sender = message.data.split(":")[0];
+            var value = message.data.split(":")[1];
+            if (sender !== clientId.toString()) {
+                document.getElementById('primes').innerHTML += '<div>' + sender + " found a prime: <b>" + value + '</b></div>';
+            }
+        };
+
+        window.setInterval(function() {
+            var rand = parseInt(Math.random()*100);
+            document.getElementById('rand').innerHTML = rand;
+            ws.send(clientId + ":" + rand);
+        }, 500);
+    </script>
+</body>
+</html>
